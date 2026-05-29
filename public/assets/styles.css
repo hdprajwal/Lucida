@@ -1,0 +1,172 @@
+/* ===========================================================================
+   Lucida — sketchbook/zine design system
+   Shared by index.html (landing) and app.html (studio)
+   =========================================================================== */
+
+:root {
+  /* paper + ink */
+  --paper:    #FBF5E6;
+  --paper-2:  #F3E9D2;
+  --paper-3:  #ECE0C4;
+  --ink:      #22201D;
+  --ink-soft: #5A544A;
+
+  /* marker accents */
+  --yellow: #FFD23F;
+  --coral:  #FF6B5E;
+  --teal:   #2EC4B6;
+  --blue:   #4D9DE0;
+
+  /* lines + shadows */
+  --line:    #22201D;
+  --shadow:  rgba(34, 32, 29, 0.9);
+
+  --r-rough:  255px 15px 225px 15px / 15px 225px 15px 255px; /* hand-drawn box */
+  --r-rough2: 15px 225px 15px 255px / 255px 15px 225px 15px;
+  --r-pill:   40px;
+
+  --font-display: "Fredoka", "Comic Sans MS", system-ui, sans-serif;
+  --font-hand:    "Patrick Hand", "Comic Sans MS", cursive;
+  --font-ui:      ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --maxw: 1080px;
+}
+
+/* ---- reset ------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; }
+a { color: inherit; }
+
+/* subtle paper grain laid over the whole page */
+.paper-bg {
+  position: relative;
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(0,0,0,.015) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(0,0,0,.02) 1px, transparent 1px);
+  background-size: 7px 7px, 13px 13px;
+  background-position: 0 0, 4px 6px;
+}
+
+/* ---- typography -------------------------------------------------------- */
+.display { font-family: var(--font-display); font-weight: 600; line-height: 1.02; letter-spacing: -.5px; }
+.hand    { font-family: var(--font-hand); }
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+/* ---- the hand-drawn button (chunky, marker shadow) --------------------- */
+.btn {
+  --btn-bg: var(--paper);
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--ink);
+  background: var(--btn-bg);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r-rough);
+  padding: .7rem 1.4rem;
+  box-shadow: 4px 4px 0 var(--shadow);
+  transition: transform .08s ease, box-shadow .08s ease, background .15s ease;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.btn:hover { transform: translate(-1px,-1px); box-shadow: 6px 6px 0 var(--shadow); }
+.btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--shadow); }
+.btn--lg { font-size: 1.3rem; padding: .9rem 1.8rem; border-radius: var(--r-rough2); }
+.btn--yellow { --btn-bg: var(--yellow); }
+.btn--coral  { --btn-bg: var(--coral); }
+.btn--teal   { --btn-bg: var(--teal); }
+.btn--ghost  { box-shadow: none; border-style: dashed; }
+.btn--icon   { padding: .6rem; border-radius: 50%; }
+
+/* round icon toggle used in the studio toolbar */
+.tool {
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  background: var(--paper);
+  border: 2.5px solid var(--ink);
+  border-radius: 60% 40% 55% 45% / 50% 55% 45% 50%;
+  box-shadow: 3px 3px 0 var(--shadow);
+  color: var(--ink);
+  transition: transform .08s ease, box-shadow .08s ease, background .15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.tool svg { width: 26px; height: 26px; }
+.tool:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--shadow); }
+.tool[aria-pressed="true"], .tool.is-active {
+  background: var(--yellow);
+  transform: rotate(-2deg);
+}
+.tool[disabled] { opacity: .4; pointer-events: none; }
+
+/* ---- card / panel ------------------------------------------------------ */
+.card {
+  background: var(--paper);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--r-rough);
+  box-shadow: 5px 5px 0 var(--shadow);
+  padding: 1.4rem;
+}
+.tape {
+  position: absolute; top: -12px; left: 50%;
+  width: 84px; height: 26px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: rgba(255,210,63,.55);
+  border: 1px dashed rgba(34,32,29,.25);
+}
+
+/* ---- marker-style range slider ----------------------------------------- */
+.slider { width: 100%; appearance: none; background: transparent; cursor: pointer; }
+.slider::-webkit-slider-runnable-track {
+  height: 10px; border: 2.5px solid var(--ink); border-radius: var(--r-pill);
+  background: repeating-linear-gradient(90deg, var(--paper-2) 0 8px, var(--paper-3) 8px 12px);
+}
+.slider::-moz-range-track {
+  height: 10px; border: 2.5px solid var(--ink); border-radius: var(--r-pill);
+  background: var(--paper-2);
+}
+.slider::-webkit-slider-thumb {
+  appearance: none; width: 26px; height: 26px; margin-top: -10px;
+  background: var(--coral); border: 2.5px solid var(--ink); border-radius: 50%;
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+.slider::-moz-range-thumb {
+  width: 26px; height: 26px;
+  background: var(--coral); border: 2.5px solid var(--ink); border-radius: 50%;
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+
+/* ---- misc helpers ------------------------------------------------------ */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 1.25rem; }
+.center { text-align: center; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.wobble { display: inline-block; }
+.wobble:hover { animation: wobble .5s ease both; }
+@keyframes wobble {
+  0%,100% { transform: rotate(0); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+/* the squiggle underline used under headings */
+.squiggle { display: block; width: 220px; max-width: 60%; height: 14px; margin: .4rem auto 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}

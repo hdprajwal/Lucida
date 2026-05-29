@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lucida — trace anything onto paper</title>
+<meta name="description" content="Use your camera to overlay any image and trace it onto paper. 100% on-device, no uploads, works offline.">
+<meta name="theme-color" content="#FBF5E6">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  /* ---- landing-only layout ---- */
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 0; }
+  .brand { display:flex; align-items:center; gap:.6rem; text-decoration:none; }
+  .brand img { width:42px; height:42px; }
+  .brand .wordmark { font-size:1.7rem; }
+
+  .hero { padding: 2rem 0 3rem; }
+  .hero-grid { display:grid; grid-template-columns: 1.1fr .9fr; gap:2.5rem; align-items:center; }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); margin:.2rem 0 .4rem; }
+  .hero h1 .hl { background: linear-gradient(transparent 60%, var(--yellow) 60%); padding:0 .1em; }
+  .hero p.lead { font-size:1.35rem; color:var(--ink-soft); max-width:30ch; line-height:1.45; }
+  .hero .cta-row { display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.6rem; align-items:center; }
+  .priv-pill { font-family:var(--font-hand); font-size:1.15rem; display:inline-flex; align-items:center; gap:.4rem; }
+
+  .scene { position:relative; }
+  .scene .card { transform: rotate(-1.5deg); }
+
+  section.band { padding: 3rem 0; }
+  .band h2 { font-size: clamp(2rem,4vw,2.8rem); text-align:center; margin:0; }
+
+  .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; margin-top:2.2rem; }
+  .step { position:relative; text-align:center; }
+  .step .card { padding-top:2rem; transform: rotate(var(--tilt,0deg)); height:100%; }
+  .step .num {
+    position:absolute; top:-18px; left:50%; transform:translateX(-50%) rotate(-4deg);
+    width:44px; height:44px; display:grid; place-items:center;
+    background:var(--coral); color:var(--paper); font-family:var(--font-display); font-weight:700;
+    border:2.5px solid var(--ink); border-radius:50%; box-shadow:2px 2px 0 var(--shadow); z-index:1;
+  }
+  .step .icon { width:64px; height:64px; margin:0 auto .8rem; }
+  .step h3 { font-family:var(--font-display); margin:.2rem 0 .4rem; font-size:1.3rem; }
+  .step p { margin:0; color:var(--ink-soft); }
+
+  .why { display:flex; gap:1.2rem; flex-wrap:wrap; justify-content:center; margin-top:1.8rem; }
+  .why .chip { background:var(--paper); border:2.5px dashed var(--ink); border-radius:var(--r-pill);
+               padding:.6rem 1.2rem; font-family:var(--font-hand); font-size:1.2rem;
+               display:inline-flex; gap:.5rem; align-items:center; }
+
+  footer { padding:2.5rem 0 3.5rem; text-align:center; color:var(--ink-soft); }
+  footer .wordmark { color:var(--ink); }
+
+  @media (max-width: 760px) {
+    .hero-grid { grid-template-columns:1fr; }
+    .scene { order:-1; max-width:420px; margin:0 auto; }
+    .steps { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body class="paper-bg">
+<div class="wrap">
+
+  <!-- nav -->
+  <nav class="nav">
+    <a class="brand" href="./">
+      <img src="assets/logo.svg" alt="">
+      <span class="wordmark">Lucida</span>
+    </a>
+    <div style="display:flex; align-items:center; gap:.7rem">
+      <a class="btn btn--icon" href="https://github.com/hdprajwal/Lucida" target="_blank" rel="noopener" title="View source on GitHub" aria-label="View source on GitHub">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17 4.8 18 5.1 18 5.1c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.3v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+      </a>
+      <a class="btn btn--ghost" href="app.html">Open studio</a>
+    </div>
+  </nav>
+
+  <!-- hero -->
+  <header class="hero">
+    <div class="hero-grid">
+      <div>
+        <h1 class="display">Trace <span class="hl">anything</span><br>onto paper.</h1>
+        <p class="lead">Your phone becomes a <em>camera lucida</em>. Float any image over your camera,
+           fade the opacity, and draw what you see — right onto the page below.</p>
+        <div class="cta-row">
+          <a class="btn btn--lg btn--yellow wobble" href="app.html">Start tracing →</a>
+          <span class="priv-pill">🔒 stays on your device</span>
+        </div>
+      </div>
+
+      <!-- hand-drawn scene: phone mounted over paper -->
+      <div class="scene">
+        <div class="card">
+          <span class="tape"></span>
+          <svg viewBox="0 0 320 240" width="100%" fill="none" aria-label="A phone mounted above paper, tracing an image">
+            <!-- paper sheet -->
+            <rect x="20" y="120" width="280" height="105" rx="6" fill="#fff" stroke="#22201D" stroke-width="3" transform="rotate(-1 160 170)"/>
+            <!-- traced lines emerging on paper -->
+            <path d="M70 175 q30 -22 60 0 t60 0" stroke="#4D9DE0" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>
+            <path d="M95 195 q25 12 55 0" stroke="#FF6B5E" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>
+            <!-- stand arm -->
+            <path d="M40 225 V70 q0 -10 10 -10 H120" stroke="#22201D" stroke-width="4" stroke-linecap="round"/>
+            <!-- phone -->
+            <g transform="rotate(3 175 50)">
+              <rect x="115" y="18" width="120" height="66" rx="10" fill="#22201D"/>
+              <rect x="122" y="25" width="106" height="52" rx="4" fill="#FBF5E6"/>
+              <!-- faint reference image on screen -->
+              <circle cx="160" cy="51" r="15" fill="none" stroke="#5A544A" stroke-width="2"/>
+              <path d="M150 60 q10 -16 22 0" stroke="#5A544A" stroke-width="2" fill="none"/>
+              <circle cx="200" cy="42" r="3" fill="#FFD23F"/>
+            </g>
+            <!-- pencil -->
+            <g transform="rotate(28 250 200)">
+              <rect x="240" y="150" width="12" height="70" fill="#FFD23F" stroke="#22201D" stroke-width="2.5"/>
+              <path d="M240 220 h12 l-6 14 Z" fill="#22201D"/>
+            </g>
+            <!-- sparkle -->
+            <path d="M280 30 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z" fill="#2EC4B6" stroke="#22201D" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- how it works -->
+  <section class="band">
+    <h2 class="display">How it works</h2>
+    <svg class="squiggle" viewBox="0 0 220 14" preserveAspectRatio="none"><path d="M2 8 q18 -10 36 0 t36 0 t36 0 t36 0 t36 0" stroke="#FF6B5E" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>
+
+    <div class="steps">
+      <div class="step">
+        <span class="num">1</span>
+        <div class="card" style="--tilt:-1.5deg">
+          <svg class="icon" viewBox="0 0 64 64" fill="none">
+            <rect x="8" y="20" width="48" height="34" rx="6" stroke="#22201D" stroke-width="3.5"/>
+            <path d="M22 20 l5 -8 h10 l5 8" stroke="#22201D" stroke-width="3.5" fill="none" stroke-linejoin="round"/>
+            <circle cx="32" cy="37" r="9" stroke="#22201D" stroke-width="3.5" fill="#FFD23F"/>
+            <path d="M44 14 l3 5 l5 -7" stroke="#2EC4B6" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h3>Allow the camera</h3>
+          <p>Point your phone down at a blank sheet of paper.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="num">2</span>
+        <div class="card" style="--tilt:1.2deg">
+          <svg class="icon" viewBox="0 0 64 64" fill="none">
+            <rect x="10" y="14" width="44" height="36" rx="5" stroke="#22201D" stroke-width="3.5" fill="#fff"/>
+            <circle cx="22" cy="26" r="4" fill="#FFD23F" stroke="#22201D" stroke-width="2.5"/>
+            <path d="M14 46 l12 -14 l9 10 l7 -6 l8 10" stroke="#22201D" stroke-width="3.5" fill="none" stroke-linejoin="round"/>
+            <path d="M44 54 v10 M39 59 h10" stroke="#FF6B5E" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+          <h3>Drop in an image</h3>
+          <p>Pick any picture from your device. It never gets uploaded.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="num">3</span>
+        <div class="card" style="--tilt:-1deg">
+          <svg class="icon" viewBox="0 0 64 64" fill="none">
+            <line x1="10" y1="26" x2="54" y2="26" stroke="#22201D" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="26" cy="26" r="7" fill="#FF6B5E" stroke="#22201D" stroke-width="3"/>
+            <path d="M16 52 l28 -10 l-4 -8 Z" fill="#FFD23F" stroke="#22201D" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M44 34 l6 -3" stroke="#22201D" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+          <h3>Fade & trace</h3>
+          <p>Slide the opacity down and draw what shows through.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- why private -->
+  <section class="band center">
+    <h2 class="display">Yours, and only yours</h2>
+    <svg class="squiggle" viewBox="0 0 220 14" preserveAspectRatio="none"><path d="M2 8 q18 -10 36 0 t36 0 t36 0 t36 0 t36 0" stroke="#2EC4B6" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>
+    <div class="why">
+      <span class="chip">🚫 no uploads</span>
+      <span class="chip">📵 no servers</span>
+      <span class="chip">💾 history saved on-device</span>
+      <span class="chip">✈️ works offline</span>
+    </div>
+    <div style="margin-top:2.2rem">
+      <a class="btn btn--lg btn--teal wobble" href="app.html">Open the studio →</a>
+    </div>
+  </section>
+
+  <footer>
+    <a class="brand" href="./" style="justify-content:center; margin-bottom:.6rem">
+      <img src="assets/logo.svg" alt="" style="width:32px;height:32px">
+      <span class="wordmark" style="font-size:1.3rem">Lucida</span>
+    </a>
+    <p class="hand" style="font-size:1.2rem; margin:.2rem 0">a tiny camera lucida for your pocket · made for makers</p>
+    <p style="margin:1rem 0 0">
+      <a class="btn btn--ghost" href="https://github.com/hdprajwal/Lucida" target="_blank" rel="noopener" style="font-size:1rem">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="vertical-align:-4px"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.4 11.4 0 0 1 6 0C17 4.8 18 5.1 18 5.1c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.8 1.2 3.1 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.3v3.3c0 .3.2.7.8.6 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+        View source on GitHub
+      </a>
+    </p>
+  </footer>
+
+</div>
+
+<script>
+  /* Register the service worker so the landing + studio work offline as a PWA. */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>

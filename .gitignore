@@ -1,0 +1,16 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Tooling / deploy caches
+node_modules/
+.wrangler/
+.vercel/
+.cache/
+
+# Local auth / state (never commit these)
+*.auth.json
+state.json

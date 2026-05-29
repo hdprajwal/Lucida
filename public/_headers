@@ -1,0 +1,14 @@
+# Cloudflare Pages headers (https://developers.cloudflare.com/pages/configuration/headers/)
+
+# Never let the browser hold a stale service worker — always revalidate it so a
+# new deploy (and a bumped CACHE in sw.js) takes effect on the next visit.
+/sw.js
+  Cache-Control: no-cache
+
+# The HTML shells are tiny and unversioned; revalidate rather than serve stale.
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/app.html
+  Cache-Control: no-cache

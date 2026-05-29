@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Lucida — studio</title>
+<meta name="theme-color" content="#22201D">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  html, body { height: 100%; overflow: hidden; background: #22201D; }
+  body { color: var(--paper); }
+
+  /* ---- splash ---- */
+  #splash {
+    position: fixed; inset: 0; z-index: 100;
+    display: grid; place-items: center; background: var(--paper);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  #splash.hide { opacity: 0; transform: scale(1.05); pointer-events: none; }
+  #splash .mark { width: min(44vw, 188px); transform-origin: center; opacity: 0;
+                  animation: spin-in .9s cubic-bezier(.2,.8,.2,1) forwards .1s; }
+  #splash .word { font-family: var(--font-display); font-weight: 700; font-size: 2rem;
+                  text-align: center; margin-top: 1.1rem; opacity: 0; animation: pop .4s ease forwards .8s; }
+  @keyframes spin-in { from { opacity:0; transform: rotate(-150deg) scale(.55);} to { opacity:1; transform: rotate(0) scale(1);} }
+  @keyframes pop  { from { opacity:0; transform: scale(.4) rotate(-15deg);} to { opacity:1; transform: scale(1) rotate(0);} }
+
+  /* ---- stage / layers ---- */
+  #stage { position: fixed; inset: 0; overflow: hidden; background:#000; }
+  #cam, #freeze {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; background:#000;
+  }
+  #freeze { display: none; }
+  #overlay {
+    position: absolute; top: 50%; left: 50%;
+    transform-origin: center center;
+    will-change: transform, opacity, filter;
+    touch-action: none;
+    max-width: none;
+  }
+  #grid {
+    position: absolute; inset: 0; pointer-events: none; display: none;
+    background-image:
+      linear-gradient(var(--gridc,rgba(255,255,255,.6)) 1.5px, transparent 1.5px),
+      linear-gradient(90deg, var(--gridc,rgba(255,255,255,.6)) 1.5px, transparent 1.5px);
+    background-size: 33.33% 33.33%, 33.33% 33.33%;
+  }
+  #grid.show { display: block; }
+
+  /* ---- camera-enable / error gate ---- */
+  #gate {
+    position: absolute; inset: 0; z-index: 40; display: grid; place-items: center;
+    padding: 1.5rem; text-align: center; background: rgba(34,32,29,.92); color: var(--paper);
+  }
+  #gate.hide { display: none; }
+  #gate .card { background: var(--paper); color: var(--ink); max-width: 360px; }
+  #gate .icon { width: 76px; height: 76px; margin: 0 auto .6rem; }
+  #gate h2 { font-family: var(--font-display); margin: .3rem 0 .5rem; }
+  #gate p  { color: var(--ink-soft); margin: 0 0 1.2rem; }
+
+  /* ---- top bar ---- */
+  #topbar {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: max(.7rem, env(safe-area-inset-top)) .9rem .7rem; gap: .6rem;
+    background: linear-gradient(rgba(34,32,29,.55), transparent);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  #topbar a.home { display:flex; align-items:center; gap:.4rem; text-decoration:none; color:var(--paper); }
+  #topbar a.home img { width:30px; height:30px; }
+  #topbar .wordmark { font-size:1.2rem; }
+  .mini {
+    width:44px; height:44px; display:grid; place-items:center;
+    background: rgba(251,245,230,.92); color: var(--ink);
+    border:2.5px solid var(--ink); border-radius:50%; box-shadow:2px 2px 0 var(--shadow);
+  }
+  .mini svg { width:22px; height:22px; }
+  .topbar-tools { display:flex; gap:.5rem; }
+
+  /* ---- bottom toolbar ---- */
+  #toolbar {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 30;
+    padding: .8rem .8rem max(1rem, env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: .7rem; align-items: center;
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  body.minimal #toolbar, body.minimal #topbar { opacity: 0; transform: translateY(20px); pointer-events: none; }
+  body.minimal #topbar { transform: translateY(-20px); }
+
+  /* opacity is always visible — the primary control */
+  .opacity-bar {
+    width: min(560px, 94vw); background: rgba(251,245,230,.95); color: var(--ink);
+    border:2.5px solid var(--ink); border-radius: var(--r-pill);
+    box-shadow: 4px 4px 0 var(--shadow); padding: .55rem 1rem;
+    display:flex; align-items:center; gap:.8rem;
+  }
+  .opacity-bar .lbl { font-family:var(--font-display); font-weight:600; white-space:nowrap; }
+  .opacity-bar .pct { font-family:var(--font-hand); font-size:1.2rem; min-width:3ch; text-align:right; }
+
+  .tool-row { display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center; max-width:96vw; }
+
+  /* ---- bottom sheet (control panels) ---- */
+  .sheet {
+    position: absolute; left:0; right:0; bottom:0; z-index: 50;
+    background: var(--paper); color: var(--ink);
+    border-top: 3px solid var(--ink); border-radius: 26px 26px 0 0;
+    box-shadow: 0 -6px 0 rgba(34,32,29,.15);
+    padding: 1rem 1.2rem max(1.4rem, env(safe-area-inset-bottom));
+    transform: translateY(110%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
+    max-height: 70vh; overflow-y: auto;
+  }
+  .sheet.open { transform: translateY(0); }
+  .sheet .grip { width:48px; height:6px; background:var(--ink); border-radius:6px; margin:.1rem auto .9rem; opacity:.4; }
+  .sheet h3 { font-family:var(--font-display); margin:.2rem 0 1rem; display:flex; align-items:center; gap:.5rem; }
+  .field { margin: 0 0 1.1rem; }
+  .field label { display:flex; justify-content:space-between; font-weight:600; margin-bottom:.4rem; }
+  .field .val { font-family:var(--font-hand); font-size:1.15rem; color:var(--ink-soft); }
+  .switch-row { display:flex; gap:.6rem; flex-wrap:wrap; }
+  .sheet-actions { display:flex; justify-content:flex-end; gap:.6rem; margin-top:.4rem; }
+
+  /* ---- history drawer ---- */
+  #drawer {
+    position:absolute; top:0; right:0; bottom:0; z-index: 60; width: min(420px, 88vw);
+    background: var(--paper); color: var(--ink); border-left:3px solid var(--ink);
+    transform: translateX(110%); transition: transform .3s cubic-bezier(.2,.8,.2,1);
+    display:flex; flex-direction:column;
+  }
+  #drawer.open { transform: translateX(0); }
+  #drawer header { display:flex; align-items:center; justify-content:space-between;
+                   padding: max(1rem, env(safe-area-inset-top)) 1.1rem .8rem; border-bottom:2px dashed var(--ink); }
+  #drawer header h2 { font-family:var(--font-display); margin:0; font-size:1.4rem; }
+  #gallery { padding:1rem; overflow-y:auto; display:grid; grid-template-columns:1fr 1fr; gap:1rem; align-content:start; }
+  .pg { position:relative; background:#fff; border:2.5px solid var(--ink); border-radius:8px;
+        box-shadow:3px 3px 0 var(--shadow); overflow:hidden; cursor:pointer; transform:rotate(var(--t,0deg)); }
+  .pg img { width:100%; aspect-ratio:1; object-fit:cover; display:block; background:var(--paper-2); }
+  .pg .meta { padding:.4rem .5rem; font-size:.8rem; }
+  .pg .meta b { font-family:var(--font-display); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pg .meta span { color:var(--ink-soft); font-size:.72rem; }
+  .pg .del { position:absolute; top:4px; right:4px; width:28px; height:28px; border-radius:50%;
+             background:var(--coral); color:#fff; border:2px solid var(--ink); display:grid; place-items:center;
+             font-weight:700; line-height:1; padding:0; }
+  #empty { grid-column:1/-1; text-align:center; color:var(--ink-soft); padding:2rem 1rem; }
+  #empty svg { width:120px; margin:0 auto 1rem; }
+
+  .scrim { position:absolute; inset:0; z-index:45; background:rgba(34,32,29,.45); opacity:0; pointer-events:none; transition:opacity .25s; }
+  .scrim.show { opacity:1; pointer-events:auto; }
+
+  .toast {
+    position:absolute; left:50%; top:18%; transform:translateX(-50%) rotate(-1deg); z-index:80;
+    background:var(--ink); color:var(--paper); padding:.6rem 1.1rem; border-radius:var(--r-pill);
+    font-family:var(--font-hand); font-size:1.1rem; box-shadow:3px 3px 0 rgba(0,0,0,.3);
+    opacity:0; transition:opacity .2s, transform .2s; pointer-events:none;
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(-6px) rotate(-1deg); }
+</style>
+</head>
+<body class="paper-bg">
+
+  <!-- splash -->
+  <div id="splash">
+    <div>
+      <svg class="mark" viewBox="0 0 128 127" fill="#22201D" aria-hidden="true">
+        <path d="M4.8646 46.5988L25.266 52.5988C26.3337 52.8644 27.4014 52.3331 27.667 51.2654C29.0004 47.531 30.8649 44.0676 33.266 40.8644C33.9326 40.0623 33.7972 38.7289 33.0003 38.0622L16.735 24.3329C15.8027 23.5308 14.4694 23.6662 13.8027 24.5985C9.26626 30.4683 5.80271 36.9996 3.53191 43.9319C3.13607 45.135 3.80209 46.1977 4.8646 46.5988Z"/>
+        <path d="M37.4012 33.5307C38.0679 34.3328 39.2658 34.463 40.2034 33.7963C43.4012 31.2651 46.7346 29.3952 50.469 28.0619C51.5367 27.6609 52.0679 26.5931 51.8023 25.5307L45.5315 5.26538C45.1304 4.19768 43.9326 3.53098 42.8648 3.93205C35.9326 6.33312 29.4008 9.93202 23.6675 14.5987C22.7352 15.2654 22.7352 16.7342 23.4019 17.531L37.4012 33.5307Z"/>
+        <path d="M37.4013 91.1361C34.5992 88.334 32.068 85.1361 30.2034 81.6673C29.6722 80.735 28.6045 80.334 27.5368 80.735L8.33411 89.9329C7.26641 90.4641 6.86532 91.6673 7.40181 92.735C10.7352 99.2661 15.2664 105.136 20.7352 110.204C21.5372 111.006 22.8706 110.871 23.6674 110.069L37.5314 93.9329C38.3335 93.1361 38.1982 91.933 37.4013 91.1361Z"/>
+        <path d="M81.136 29.9319C84.7349 31.7964 87.9381 34.0674 90.7349 36.9996C91.537 37.8017 92.7349 37.8017 93.5371 37.135L109.401 22.8697C110.203 22.0676 110.333 20.7342 109.536 19.9374C104.469 14.6041 98.4691 10.203 91.8018 6.86969C90.7341 6.33844 89.5362 6.86969 88.9997 7.93738L80.1976 27.2708C79.6663 28.3333 80.1985 29.4007 81.136 29.9319Z"/>
+        <path d="M96.5986 44.7347C98.599 48.2035 100.067 51.9325 100.864 55.8024C101.13 56.8701 102.062 57.5368 103.13 57.4013L124.198 54.068C125.266 53.9326 126.062 52.7347 125.932 51.6669C124.463 44.3336 121.932 37.5309 118.068 31.1363C117.536 30.204 116.203 29.9383 115.135 30.4696L97.271 42.0685C96.3339 42.5998 96.0674 43.8024 96.5986 44.7347Z"/>
+        <path d="M124.864 63.6667H103.667C102.599 63.6667 101.802 64.599 101.667 65.6667C101.531 69.6667 100.599 73.5312 99.2661 77.2656C98.8651 78.3333 99.2661 79.4011 100.333 79.7968L119.803 88.328C120.87 88.729 122.068 88.328 122.605 87.2603C125.407 80.328 126.87 73.1243 127.136 65.6616C127.001 64.5991 126.067 63.5312 124.864 63.6667Z"/>
+        <path d="M115.265 96.8641L97.401 85.3953C96.4689 84.864 95.2658 85.1297 94.7346 85.9266C92.469 89.1244 89.5367 92.062 86.3335 94.3276C85.4012 94.9943 85.2658 96.1921 85.8022 97.1301L97.537 114.864C98.203 115.797 99.537 116.062 100.469 115.396C106.469 111.13 111.667 105.797 115.938 99.7971C116.469 98.7341 116.198 97.4001 115.265 96.8641Z"/>
+        <path d="M80.3332 100.068C79.9322 99.1359 78.7343 98.5989 77.6665 98.9999C73.9321 100.469 70.0676 101.266 66.1977 101.531C65.13 101.667 64.1977 102.464 64.3332 103.531L64.5988 124.865C64.5988 126.063 65.5311 127 66.7343 126.865C74.2031 126.464 81.401 124.865 88.2036 122.063C89.2713 121.662 89.6724 120.328 89.2713 119.261L80.3332 100.068Z"/>
+        <path d="M74.3333 25.1359L79.9322 4.60527C80.3332 3.53235 79.6666 2.33447 78.4686 2.06887C73.6665 1.00117 68.7342 0.334473 63.6659 0.334473C61.1347 0.334473 58.8638 0.469893 56.4681 0.735512C55.4004 0.870932 54.6035 1.93343 54.7337 3.00111L57.8014 24.0691C57.9368 25.1368 58.8691 25.8035 59.9369 25.8035C63.6713 25.5378 68.0723 25.8035 71.8014 26.4701C72.9993 26.866 74.0677 26.1984 74.3333 25.1359Z"/>
+        <path d="M56.3334 101C52.4688 100.198 48.7344 98.8649 45.2656 96.9999C44.3333 96.4686 43.1302 96.7343 42.599 97.6669L31.2656 115.667C30.599 116.599 31 117.932 31.9323 118.469C38.3334 122.203 45.2656 124.734 52.599 126.068C53.6667 126.203 54.8646 125.401 55 124.333L57.9323 103.265C58.1979 102.198 57.401 101.266 56.3334 101Z"/>
+        <path d="M26.7346 72.5986C25.8023 68.734 25.5367 64.734 25.8023 60.8642C25.9377 59.7965 25.1356 58.8642 24.0679 58.7287L2.99988 56.062C1.80196 55.9266 0.734283 56.7287 0.734283 57.9266C-0.0677967 65.1348 0.468663 72.4679 2.33322 79.6666C2.59884 80.7343 3.80202 81.401 4.86442 81.1354L25.2658 74.9999C26.4689 74.7343 27.0002 73.6663 26.7346 72.5986Z"/>
+      </svg>
+      <div class="word">Lucida</div>
+    </div>
+  </div>
+
+  <!-- stage -->
+  <div id="stage">
+    <video id="cam" playsinline autoplay muted></video>
+    <canvas id="freeze"></canvas>
+    <canvas id="overlay"></canvas>
+    <div id="grid"></div>
+  </div>
+
+  <!-- camera enable / error gate -->
+  <div id="gate">
+    <div class="card">
+      <svg class="icon" viewBox="0 0 64 64" fill="none">
+        <rect x="8" y="20" width="48" height="34" rx="6" stroke="#22201D" stroke-width="3.5"/>
+        <path d="M22 20 l5 -8 h10 l5 8" stroke="#22201D" stroke-width="3.5" fill="none" stroke-linejoin="round"/>
+        <circle cx="32" cy="37" r="9" stroke="#22201D" stroke-width="3.5" fill="#FFD23F"/>
+      </svg>
+      <h2 id="gate-title">Point your phone at the paper</h2>
+      <p id="gate-msg">Lucida needs your camera to show the page underneath. Nothing is recorded or uploaded.</p>
+      <button class="btn btn--yellow" id="enable-cam">Enable camera</button>
+    </div>
+  </div>
+
+  <!-- top bar -->
+  <div id="topbar">
+    <a class="home" href="index.html" title="Home"><img src="assets/logo.svg" alt=""><span class="wordmark">Lucida</span></a>
+    <div class="topbar-tools">
+      <button class="mini" id="btn-minimal" title="Hide controls (tap screen to bring back)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h16"/></svg>
+      </button>
+      <button class="mini" id="btn-history" title="History">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v6h6"/><path d="M3.5 9a9 9 0 1 1-1 5"/><path d="M12 7v5l4 2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- bottom toolbar -->
+  <div id="toolbar">
+    <div class="opacity-bar">
+      <span class="lbl">Opacity</span>
+      <input class="slider" id="opacity" type="range" min="0" max="100" value="50" aria-label="Image opacity">
+      <span class="pct" id="opacity-val">50%</span>
+    </div>
+    <div class="tool-row">
+      <button class="tool" id="t-load" title="Load image">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5L5 21"/></svg>
+      </button>
+      <button class="tool" id="t-lock" title="Lock position" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+      </button>
+      <button class="tool" id="t-flip" title="Flip horizontally">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M7 7l-4 5 4 5"/><path d="M17 7l4 5-4 5"/></svg>
+      </button>
+      <button class="tool" id="t-edges" title="Edge detection" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18c4-10 12-10 16 0"/><path d="M4 18h16" stroke-dasharray="2 3"/></svg>
+      </button>
+      <button class="tool" id="t-filters" title="Image filters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="6"/><circle cx="15" cy="15" r="6"/></svg>
+      </button>
+      <button class="tool" id="t-grid" title="Grid" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+      </button>
+      <button class="tool" id="t-freeze" title="Freeze frame" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.5 4.5l15 15M19.5 4.5l-15 15"/></svg>
+      </button>
+      <button class="tool" id="t-reset" title="Reset position">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- filters sheet -->
+  <div class="sheet" id="sheet-filters">
+    <div class="grip"></div>
+    <h3>🎨 Image filters</h3>
+    <div class="field">
+      <label>Grayscale <span class="val" id="v-gray">0%</span></label>
+      <input class="slider" id="f-gray" type="range" min="0" max="100" value="0">
+    </div>
+    <div class="field">
+      <label>Contrast <span class="val" id="v-contrast">100%</span></label>
+      <input class="slider" id="f-contrast" type="range" min="0" max="300" value="100">
+    </div>
+    <div class="field">
+      <label>Brightness <span class="val" id="v-bright">100%</span></label>
+      <input class="slider" id="f-bright" type="range" min="0" max="300" value="100">
+    </div>
+    <div class="switch-row">
+      <button class="btn" id="f-invert" aria-pressed="false">Invert colors</button>
+      <button class="btn btn--ghost" id="f-reset">Reset filters</button>
+    </div>
+    <div class="sheet-actions"><button class="btn btn--yellow" data-close-sheet>Done</button></div>
+  </div>
+
+  <!-- edges sheet -->
+  <div class="sheet" id="sheet-edges">
+    <div class="grip"></div>
+    <h3>✏️ Edge detection</h3>
+    <p class="hand" style="font-size:1.1rem;margin:.2rem 0 1rem;color:var(--ink-soft)">Turns the photo into clean line-art — easier to trace.</p>
+    <div class="switch-row" style="margin-bottom:1rem">
+      <button class="btn btn--coral" id="e-toggle" aria-pressed="false">Turn on edges</button>
+    </div>
+    <div class="field">
+      <label>Sensitivity <span class="val" id="v-threshold">30%</span></label>
+      <input class="slider" id="e-threshold" type="range" min="5" max="80" value="30">
+    </div>
+    <div class="sheet-actions"><button class="btn btn--yellow" data-close-sheet>Done</button></div>
+  </div>
+
+  <!-- history drawer -->
+  <div id="drawer">
+    <header>
+      <h2>📒 Your tracings</h2>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn--ghost" id="clear-all" style="padding:.4rem .9rem">Clear all</button>
+        <button class="mini" id="close-drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+    </header>
+    <div id="gallery"></div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <div class="toast" id="toast"></div>
+
+  <input type="file" id="file-input" accept="image/*" class="sr-only">
+
+<script src="assets/store.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

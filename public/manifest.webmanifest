@@ -1,0 +1,15 @@
+{
+  "name": "Lucida — trace anything onto paper",
+  "short_name": "Lucida",
+  "description": "Use your camera to overlay any image and trace it onto paper. 100% on-device, no uploads, works offline.",
+  "start_url": "./app.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FBF5E6",
+  "theme_color": "#FBF5E6",
+  "icons": [
+    { "src": "assets/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
